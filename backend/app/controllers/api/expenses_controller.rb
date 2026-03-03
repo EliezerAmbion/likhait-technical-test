@@ -1,16 +1,10 @@
 class Api::ExpensesController < ApplicationController
+  before_action :set_expense, only: [ :update, :destroy ]
+
   def index
-    expenses = Expense.includes(:category).order(created_at: :desc)
-
-    if params[:year].present? && params[:month].present?
-      year = params[:year].to_i
-      month = params[:month].to_i
-
-      start_date = Date.new(year, month, 1)
-      end_date = start_date.end_of_month
-
-      expenses = expenses.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
-    end
+    expenses = Expense.includes(:category)
+                      .order(date: :desc)
+                      .by_month(params[:year]&.to_i, params[:month]&.to_i)
 
     render json: expenses.map { |expense| format_expense(expense) }
   end
@@ -19,29 +13,36 @@ class Api::ExpensesController < ApplicationController
     expense = Expense.new(expense_params)
 
     if expense.save
-      render json: format_expense(expense), status: :created
+      render json: {
+        message: "Expense created successfully",
+        expense: format_expense(expense)
+    }, status: :created
     else
       render json: { errors: expense.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def update
-    expense = Expense.find(params[:id])
-
-    if expense.update(expense_params)
-      render json: format_expense(expense)
+    if @expense.update(expense_params)
+      render json: {
+        message: "Expense updated successfully",
+        expense: format_expense(@expense)
+      }, status: :ok
     else
-      render json: { errors: expense.errors.full_messages }, status: :unprocessable_entity
+      render json: { errors: @expense.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def destroy
-    expense = Expense.find(params[:id])
-    expense.destroy
-    head :no_content
+    @expense.destroy
+    render json: { message: "Expense deleted successfully" }, status: :ok
   end
 
   private
+
+  def set_expense
+    @expense = Expense.find(params[:id])
+  end
 
   def expense_params
     params.require(:expense).permit(:description, :amount, :category_id, :date)

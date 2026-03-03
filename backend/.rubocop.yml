@@ -6,3 +6,41 @@ inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 # # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
 # Layout/SpaceInsideArrayLiteralBrackets:
 #   Enabled: false
+AllCops:
+  NewCops: enable
+
+Gemspec/AddRuntimeDependency:
+  Enabled: true
+
+Gemspec/AttributeAssignment:
+  Enabled: true
+
+Gemspec/DeprecatedAttributeAssignment:
+  Enabled: true
+
+Gemspec/DevelopmentDependencies:
+  Enabled: true
+
+Gemspec/RequireMFA:
+  Enabled: true
+
+Layout/EmptyLinesAfterModuleInclusion:
+  Enabled: true
+
+Layout/LineContinuationLeadingSpace:
+  Enabled: true
+
+Layout/LineContinuationSpacing:
+  Enabled: true
+
+Layout/LineEndStringConcatenationIndentation:
+  Enabled: true
+
+Layout/SpaceBeforeBrackets:
+  Enabled: true
+
+Lint/AmbiguousAssignment:
+  Enabled: true
+
+Lint/AmbiguousOperatorPrecedence:
+  Enabled: true
