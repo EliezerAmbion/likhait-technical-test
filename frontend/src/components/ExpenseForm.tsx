@@ -4,9 +4,9 @@
 
 import React from "react";
 import { ExpenseFormData } from "../types";
-import { EXPENSE_CATEGORIES } from "../constants/categories";
 import { TextField, SelectBox, Button } from "../vibes";
 import { useExpenseForm } from "../hooks/useExpenseForm";
+import { fetchCategories, createCategory } from "../services/api";
 
 interface ExpenseFormProps {
   initialData?: Partial<ExpenseFormData>;
@@ -27,6 +27,45 @@ export function ExpenseForm({
       onSubmit,
     });
 
+  const [categoryOptions, setCategoryOptions] = React.useState<
+    { value: string; label: string; id: number }[]
+  >([]);
+
+  React.useEffect(() => {
+    fetchCategories()
+      .then((data) => {
+        setCategoryOptions(
+          data.map((c) => ({
+            value: c.name,
+            label: c.name,
+            id: c.id,
+          })),
+        );
+      })
+      .catch((err) => console.error("Failed to fetch categories:", err));
+  }, []);
+
+  const handleAddCategory = async () => {
+    const name = prompt("Enter new category name");
+    if (!name) return;
+
+    try {
+      const newCategory = await createCategory(name);
+      setCategoryOptions((prev) => [
+        ...prev,
+        {
+          value: newCategory.name,
+          label: newCategory.name,
+          id: newCategory.id,
+        },
+      ]);
+      handleChange("category", newCategory.name);
+    } catch (err) {
+      console.error("Failed to create category:", err);
+      alert("Failed to create category. Maybe the name already exists?");
+    }
+  };
+
   const formStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -39,10 +78,18 @@ export function ExpenseForm({
     marginTop: "0.5rem",
   };
 
-  const categoryOptions = EXPENSE_CATEGORIES.map((category) => ({
-    value: category,
-    label: category,
-  }));
+  const textButtonStyle: React.CSSProperties = {
+    background: "transparent",
+    color: "#007bff",
+    padding: 0,
+    height: "auto",
+    minWidth: 0,
+    alignSelf: "flex-start",
+    fontSize: "0.9rem",
+    border: "none",
+    margin: "0",
+    cursor: "pointer",
+  };
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
@@ -78,6 +125,15 @@ export function ExpenseForm({
         fullWidth
         required
       />
+
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={handleAddCategory}
+        style={textButtonStyle}
+      >
+        Add Category
+      </Button>
 
       <TextField
         label="Date"
